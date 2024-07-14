@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Media</title>
+    <link rel="stylesheet" href="../styles.css">
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-storage-compat.js"></script>
+
+    <style>
+        /* Add your CSS styles here */
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #951528;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .news-item {
+            margin-bottom: 20px;
+            /* Adjust margin as per your design */
+            padding: 20px;
+            border: 1px solid #ccc;
+            /* Example border */
+            border-radius: 5px;
+        }
+
+        .news-item h1 {
+            margin-top: 0;
+            /* Remove default margin */
+        }
+
+        .news-item img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin-top: 10px;
+            /* Adjust spacing between content and image */
+            border-radius: 5px;
+        }
+
+        .like-container {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .like-button {
+            background-color: #3498db;
+            color: #fff;
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-right: 10px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+        }
+
+        .like-count {
+            font-size: 14px;
+            color: #555;
+        }
+
+        .comments-container {
+            margin-top: 10px;
+            display: none;
+            /* Hide comments container by default */
+        }
+
+        .comment-input {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 50px;
+            width: calc(100% - 80px);
+            height: 30px;
+        }
+
+        .comment-button {
+            padding: 5px 10px;
+            background-color: #951528;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 0px;
+        }
+
+        .show-comments-button {
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .comments-list {
+            margin-top: 10px;
+        }
+
+        .comment {
+            margin-bottom: 5px;
+        }
+
+        .profile-picture {
+            width: 50px;
+            height: 50px;
+            border-radius: 100%;
+            object-fit: cover;
+            /* Ensure the image covers the entire container */
+            margin-right: 10px;
+            margin-bottom: 40px;
+            /* Adjust spacing */
+        }
+
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <image style="width: 200px;" src="../assets/Taska_L.png"></image>
+        <a style="border-radius: 50%; left: 80%; position: absolute; bottom: 91%;" href="upload.html" class="button">➕</a>
+        <!-- Logout button -->
+        <button style="width: 0px; border-radius: 50%; left: 15%; bottom: 8.9%;" onclick="logout()" class="button">🚪</button>
+        <div id="newsList"></div>
+    </div>
+
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyAExyhvCIwBR2b6jaGqfB4iYDkETj2Mumc",
+            authDomain: "wirelessbuzzer-8cc9c.firebaseapp.com",
+            databaseURL: "https://wirelessbuzzer-8cc9c-default-rtdb.firebaseio.com",
+            projectId: "wirelessbuzzer-8cc9c",
+            storageBucket: "wirelessbuzzer-8cc9c.appspot.com",
+            messagingSenderId: "664946324918",
+            appId: "1:664946324918:web:9ccb94594b6a4e25193d17"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const auth = firebase.auth();
+
+        // Function to display news items
+        function displayNews(newsId, newsData, userId, userData) {
+            const newsList = document.getElementById('newsList');
+            const newsItem = document.createElement('div');
+            newsItem.classList.add('news-item');
+            newsItem.innerHTML = `
+                <h1>${newsData.title}</h1>
+                <p>${newsData.content}</p>
+                <img src="${newsData.imageUrl}" alt="News Image">
+                <div class="like-container">
+                    <button class="like-button" onclick="likeNews('${newsId}')">&#x2665;</button>
+                    <span class="like-count" id="like-count-${newsId}">0 Likes</span>
+                </div>   
+                <button onclick="toggleComments('${newsId}')" class="show-comments-button">💬</button>
+                <div class="comments-container" id="comments-${newsId}">
+                    <input type="text" id="comment-${newsId}" class="comment-input" placeholder="Write a comment...">
+                    <button onclick="commentNews('${newsId}')" class="comment-button">Post Comment</button>
+                    <div id="commentsList-${newsId}" class="comments-list"></div>
+                </div>
+            `;
+
+            // Append profile picture if available
+            if (userData.profilePic) {
+                const profilePicElement = document.createElement('img');
+                profilePicElement.src = userData.profilePic;
+                profilePicElement.alt = 'Profile Picture';
+                profilePicElement.classList.add('profile-picture');
+                newsItem.insertBefore(profilePicElement, newsItem.firstChild);
+            }
+
+            // Check if current user is the owner of the news
+            if (auth.currentUser && auth.currentUser.uid === userId) {
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.addEventListener('click', () => {
+                    deleteNews(newsId);
+                });
+                newsItem.appendChild(deleteButton);
+            }
+
+            newsList.appendChild(newsItem);
+
+            // Fetch and display existing likes and comments for the news item
+            fetchLikes(newsId);
+            fetchComments(newsId);
+        }
+
+        // Function to fetch and display existing likes for a news item
+        function fetchLikes(newsId) {
+            db.ref('news/' + newsId + '/likes').on('value', snapshot => {
+                const likeCount = snapshot.numChildren();
+                const likeCountElement = document.getElementById(`like-count-${newsId}`);
+                likeCountElement.innerText = `${likeCount} ${likeCount === 1 ? 'Like' : 'Likes'}`;
+            });
+        }
+
+        // Function to fetch and display existing comments for a news item
+        function fetchComments(newsId) {
+            const commentsList = document.getElementById(`commentsList-${newsId}`);
+            db.ref('news/' + newsId + '/comments').on('child_added', snapshot => {
+                const commentData = snapshot.val();
+                const commentElement = document.createElement('div');
+                commentElement.classList.add('comment');
+                const username = commentData.username || 'Anonymous'; // Display as Anonymous if username not available
+                commentElement.innerHTML = `<strong>${username}:</strong> ${commentData.text}`;
+                commentsList.appendChild(commentElement);
+            });
+        }
+
+        // Function to toggle comments container visibility
+        function toggleComments(newsId) {
+            const commentsContainer = document.getElementById(`comments-${newsId}`);
+            commentsContainer.style.display = commentsContainer.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Function to like a news item
+        function likeNews(newsId) {
+            const userId = auth.currentUser.uid;
+            const likeRef = db.ref(`news/${newsId}/likes/${userId}`);
+            likeRef.transaction(current => !current ? true : null)
+                .then(() => {
+                    fetchLikes(newsId); // Update like count after liking
+                })
+                .catch(error => {
+                    console.error('Error liking news: ', error);
+                });
+        }
+
+        // Function to post a comment on a news item
+        function commentNews(newsId) {
+            const commentInput = document.getElementById(`comment-${newsId}`);
+            const commentText = commentInput.value.trim();
+            if (commentText !== '') {
+                const userId = auth.currentUser.uid;
+                const usr = localStorage.getItem('username')
+                const username =  usr|| 'Anonymous'; // Default to Anonymous if display name not available
+                db.ref(`news/${newsId}/comments`).push({
+                    userId: userId,
+                    username: username,
+                    text: commentText
+                }).then(() => {
+                    commentInput.value = ''; // Clear input field after posting comment
+                }).catch(error => {
+                    console.error('Error posting comment: ', error);
+                });
+            }
+        }
+
+        // Function to delete a news item
+        function deleteNews(newsId) {
+            if (confirm('Are you sure you want to delete this news?')) {
+                db.ref('news/' + newsId).remove()
+                    .then(() => {
+                        alert('News deleted successfully');
+                        window.location.reload()
+                        // Optional: Refresh news list after deletion
+                    })
+                    .catch(error => {
+                        console.error('Error deleting news: ', error);
+                    });
+            }
+        }
+
+        // Function to fetch and display all news items
+        function fetchAndDisplayNews() {
+            db.ref('news').on('child_added', snapshot => {
+                const newsId = snapshot.key;
+                const newsData = snapshot.val();
+                const userId = newsData.userId;
+
+                // Fetch user data to get profile picture
+                db.ref('users/' + userId).once('value', userSnapshot => {
+                    const userData = userSnapshot.val();
+                    displayNews(newsId, newsData, userId, userData);
+                });
+            });
+        }
+
+        // Call function to fetch and display all news items on page load
+        fetchAndDisplayNews();
+
+        // Logout function
+        function logout() {
+            auth.signOut().then(() => {
+                // Sign-out successful.
+                console.log('User signed out');
+                localStorage.removeItem('uid');
+                localStorage.removeItem('username')
+                // Redirect or update UI as needed
+                window.location.href = '../index.html'; // Example: Redirect to login page
+            }).catch((error) => {
+                // An error happened.
+                console.error('Sign out error:', error);
+            });
+        }
+    </script>
+
+</body>
+
+</html>

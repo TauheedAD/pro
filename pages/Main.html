@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Upload and Display</title>
+    <!-- Firebase Scripts as non-module scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-storage-compat.js"></script>
+
+    <style>
+        .news-item {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .news-item img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- News Upload Form -->
+    <h2>Upload News</h2>
+    <form id="uploadForm">
+        <input type="text" id="newsTitle" placeholder="Title" required><br>
+        <textarea id="newsContent" placeholder="Content" required></textarea><br>
+        <input type="file" id="newsImage" accept="image/*" required><br>
+        <button type="submit">Upload News</button>
+    </form>
+
+    <!-- Display News -->
+    <h2>News</h2>
+    <div id="newsList"></div>
+
+    <!-- JavaScript for Firebase and News Handling -->
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyAExyhvCIwBR2b6jaGqfB4iYDkETj2Mumc",
+    authDomain: "wirelessbuzzer-8cc9c.firebaseapp.com",
+    databaseURL: "https://wirelessbuzzer-8cc9c-default-rtdb.firebaseio.com",
+    projectId: "wirelessbuzzer-8cc9c",
+    storageBucket: "wirelessbuzzer-8cc9c.appspot.com",
+    messagingSenderId: "664946324918",
+    appId: "1:664946324918:web:9ccb94594b6a4e25193d17"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+
+        const db = firebase.database();
+        const storage = firebase.storage();
+
+        // News Upload Form Handling
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const title = document.getElementById('newsTitle').value;
+            const content = document.getElementById('newsContent').value;
+            const imageFile = document.getElementById('newsImage').files[0];
+
+            if (!title || !content || !imageFile) {
+                alert("Please fill in all fields.");
+                return;
+            }
+
+            const storageRef = storage.ref('news_images/' + imageFile.name);
+            storageRef.put(imageFile)
+                .then(snapshot => {
+                    return snapshot.ref.getDownloadURL();
+                })
+                .then(downloadURL => {
+                    return db.ref('news').push({
+                        title: title,
+                        content: content,
+                        imageUrl: downloadURL,
+                        timestamp: firebase.database.ServerValue.TIMESTAMP
+                    });
+                })
+                .then(() => {
+                    alert("News uploaded successfully!");
+                    document.getElementById('uploadForm').reset();
+                })
+                .catch(error => {
+                    console.error("Error uploading news:", error);
+                    alert("Error uploading news. Please try again.");
+                });
+        });
+
+        // Display News Function
+        function displayNews(newsId, newsData) {
+            const newsList = document.getElementById('newsList');
+            const newsItem = document.createElement('div');
+            newsItem.classList.add('news-item');
+            newsItem.innerHTML = `
+                <h3>${newsData.title}</h3>
+                <p>${newsData.content}</p>
+                <img src="${newsData.imageUrl}" alt="News Image">
+            `;
+            newsList.appendChild(newsItem);
+        }
+
+        // Fetch and Display News
+        function fetchAndDisplayNews() {
+            db.ref('news').once('value', snapshot => {
+                snapshot.forEach(childSnapshot => {
+                    const newsData = childSnapshot.val();
+                    const newsId = childSnapshot.key;
+                    displayNews(newsId, newsData);
+                });
+            });
+        }
+
+        // Call fetchAndDisplayNews to display existing news on page load
+        fetchAndDisplayNews();
+    </script>
+</body>
+</html>

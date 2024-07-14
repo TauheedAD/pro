@@ -1,0 +1,155 @@
+body {
+    background-image: url('assets/bg.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+#app {
+    width: 90%;
+    max-width: 600px;
+    margin: 20px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(5px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    position: relative;
+    height: calc(100vh - 80px);
+}
+
+
+a {
+    text-decoration: none;
+    color: #007bff;
+    padding: 10px 20px;
+    background-color: #ffffff;
+    border: 1px solid #007bff;
+    border-radius: 15px;
+    display: inline-block;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+a:hover {
+    background-color: #007bff;
+    color: #ffffff;
+}
+
+input {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin: 10px;
+    right: 5%;
+    position: relative;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+button {
+    position: relative;
+
+    padding: 10px 10px;
+    margin: 10px;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    background-color: #951528;
+    color: white;
+    font-size: 16px;
+    transition: background-color 0.3s;
+    display: inline-block;
+    /* Ensures buttons stack vertically */
+    width: 80%;
+    /* Makes buttons full width of their container */
+}
+
+button:hover {
+    background-color: #FDAC53;
+}
+
+
+.back-Img {
+    width: 80%;
+    position: absolute;
+    left: 13%;
+
+    top: 20%;
+
+}
+
+
+
+.button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #951528;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.news-item {
+    margin-bottom: 20px;
+    /* Adjust margin as per your design */
+    padding: 20px;
+    border: 1px solid #ccc;
+    /* Example border */
+    border-radius: 5px;
+}
+
+.news-item h3 {
+    margin-top: 0;
+    /* Remove default margin */
+}
+
+.news-item img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin-top: 10px;
+    /* Adjust spacing between content and image */
+}
+
+
+
+@media only screen and (max-width: 768px) {
+    #app {
+        padding: 10px;
+    }
+
+    #auth-section,
+    #chat-section {
+        width: 100%;
+    }
+
+    #contacts,
+    #chat {
+        padding: 10px;
+    }
+
+    #contacts-list li,
+    #messages p {
+        font-size: 14px;
+    }
+
+    #message-input {
+        width: calc(100% - 80px);
+    }
+
+    #media-feed {
+        max-height: 200px;
+    }
+}

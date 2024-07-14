@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Media - Upload</title>
+    <link rel="stylesheet" href="../styles.css">
+
+    <!-- Firebase Scripts as non-module scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-storage-compat.js"></script>
+
+    <style>
+        /* Add your CSS styles here */
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #951528;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <h2>Upload News</h2>
+        <form id="uploadForm">
+            <label for="title">Title:</label><br>
+            <input type="text" id="title" name="title" required><br><br>
+
+            <label for="content">Content:</label><br>
+            <textarea id="content" name="content" rows="4" cols="50" required></textarea><br><br>
+
+            <label for="image">Select Image:</label><br>
+            <input type="file" id="image" name="image" accept="image/*" required><br><br>
+
+            <button type="submit" class="button">Upload News</button>
+        </form>
+    </div>
+
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyAExyhvCIwBR2b6jaGqfB4iYDkETj2Mumc",
+    authDomain: "wirelessbuzzer-8cc9c.firebaseapp.com",
+    databaseURL: "https://wirelessbuzzer-8cc9c-default-rtdb.firebaseio.com",
+    projectId: "wirelessbuzzer-8cc9c",
+    storageBucket: "wirelessbuzzer-8cc9c.appspot.com",
+    messagingSenderId: "664946324918",
+    appId: "1:664946324918:web:9ccb94594b6a4e25193d17"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+
+        const db = firebase.database();
+        const storage = firebase.storage();
+        const auth = firebase.auth();
+
+        // Handle form submission
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const title = document.getElementById('title').value;
+            const content = document.getElementById('content').value;
+            const imageFile = document.getElementById('image').files[0];
+
+            // Check if user is authenticated
+            const user = auth.currentUser;
+            if (!user) {
+                alert('Please login to upload news.');
+                return;
+            }
+
+            // Upload image to Firebase Storage
+            const storageRef = storage.ref('news_images/' + imageFile.name);
+            const uploadTask = storageRef.put(imageFile);
+
+            // Monitor upload progress and handle completion
+            uploadTask.on('state_changed',
+                (snapshot) => {
+                    // Progress monitoring (optional)
+                },
+                (error) => {
+                    console.error('Error uploading image:', error);
+                    alert('Error uploading image. Please try again.');
+                },
+                () => {
+                    // Upload successful, get download URL and save news to database
+                    uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                        // Save news data to Firebase Database
+                        db.ref('news').push({
+                            title: title,
+                            content: content,
+                            imageUrl: downloadURL,
+                            userId: user.uid  // Associate the news with the current user's UID
+                        }).then(() => {
+                            console.log('News uploaded successfully.');
+                            alert('News uploaded successfully.');
+                            // Optionally clear form fields
+                            document.getElementById('uploadForm').reset();
+                        }).catch((error) => {
+                            console.error('Error saving news to database:', error);
+                            alert('Error saving news to database. Please try again.');
+                        });
+                    });
+                }
+            );
+        });
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Tadka-HomePage</title>
+    <style>
+        /* Add styles for transition */
+        body {
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .fade-out {
+            opacity: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <img class='back-Img' src="assets/Taska_L.png" alt="Background Image">
+
+        <button style="top: 60%;left: 8%;" id="btnReg" class="btnR">Create your new account</button>
+        <button style="top: 60%;left: 8%;" id="btnLog" class="btnL">Log in to existing account</button>
+    </div>
+
+    <script>
+        document.getElementById('btnLog').addEventListener('click', function() {
+            document.body.classList.add('fade-out');
+            setTimeout(function() {
+                window.location.href = "pages/login.html";
+            }, 300); // Adjust the time to match the transition duration
+        });
+
+        document.getElementById('btnReg').addEventListener('click', function() {
+            document.body.classList.add('fade-out');
+            setTimeout(function() {
+                window.location.href = "pages/register.html";
+            }, 300); // Adjust the time to match the transition duration
+        });
+
+        if (localStorage.getItem('uid')) {
+            document.body.classList.add('fade-out');
+            setTimeout(function() {
+                window.location.href = '/pages/media.html';
+            }, 300); // Adjust the time to match the transition duration
+        }
+    </script>
+</body>
+
+</html>

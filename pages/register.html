@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="stylesheet" href="../styles.css">
+    <!-- Firebase scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-storage.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        <input style="width: 100%; height: 50px; border-radius: 25px;" type="text" id="username" placeholder="Username">
+        <input style="width: 100%; height: 50px; border-radius: 25px;" type="email" id="email" placeholder="Email">
+        <input style="width: 100%; height: 50px; border-radius: 25px;" type="password" id="password" placeholder="Password">
+
+        <!-- Profile Picture Upload -->
+        <input style="display: none;" type="file" id="profilePic" accept="image/*">
+        <label for="profilePic" style="width: 100%; height: 50px; border-radius: 25px; background-color: #3498db; color: #fff; text-align: center; line-height: 50px; cursor: pointer;">Upload Profile Picture</label>
+        <img id="preview" src="#" alt="Preview" style="display: none; max-width: 100px; max-height: 100px; margin-top: 10px; border-radius: 50%;">
+        <a href="login.html">Already have an account? Login here.</a>
+        <button id="subbtn" style="width: 80%; height: 50px; border-radius: 25px; margin-top: 20px;">Register</button>
+
+    </div>
+
+    <script src="../js/register.js"></script>
+</body>
+
+</html>
